@@ -1,0 +1,561 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Stripe Dashboard</title>
+  <link rel="stylesheet" type="text/css" href="assets/lib/bootstrap/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="assets/css/keen-dashboards.css" />
+</head>
+<body class="application">
+
+  <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="./">Stripe Dashboard</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+
+    <div class="row">
+      <div class="col-sm-6 col-md-4">
+        <div class="chart-wrapper">
+          <div class="chart-title">
+            Last 30 Days' Revenue
+          </div>
+          <div class="chart-stage">
+            <div class="chart-stage" id="chart-1">
+            </div>
+          </div>
+          <div class="chart-notes">
+            Notes about this chart
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-4">
+        <div class="chart-wrapper">
+          <div class="chart-title">
+            Revenue per month
+          </div>
+          <div class="chart-stage" id="chart-2">
+          </div>
+          <div class="chart-notes">
+            Notes about this chart
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-4">
+        <div class="chart-wrapper">
+          <div class="chart-title">
+            New Customer Conversions
+          </div>
+          <div class="chart-stage" id="chart-3">
+          </div>
+          <div class="chart-notes">
+            Notes about this chart
+          </div>
+        </div>
+      </div>
+<!-- end of three -->
+      <div class="col-sm-6 col-md-4">
+        <div class="chart-wrapper">
+          <div class="chart-title">
+            Total Unique Paying Customers
+          </div>
+          <div class="chart-stage" id="chart-4">
+          </div>
+          <div class="chart-notes">
+            Notes about this chart
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-4">
+        <div class="chart-wrapper">
+          <div class="chart-title">
+            New Customers Paying for the First Time
+          </div>
+          <div class="chart-stage" id="chart-5">
+          </div>
+          <div class="chart-notes">
+            Notes about this chart
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-4">
+        <div class="chart-wrapper">
+          <div class="chart-title">
+            Revenue from NEW Customers
+          </div>
+          <div class="chart-stage" id="chart-6">
+          </div>
+          <div class="chart-notes">
+            Notes about this chart
+          </div>
+        </div>
+      </div>
+<!-- end of three -->
+      <div class="col-sm-6 col-md-4">
+        <div class="chart-wrapper">
+          <div class="chart-title">
+            Upsell Minus Churn
+          </div>
+          <div class="chart-stage" id="chart-7">
+          </div>
+          <div class="chart-notes">
+            Notes about this chart
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-4">
+        <div class="chart-wrapper">
+          <div class="chart-title">
+            Cell Title
+          </div>
+          <div class="chart-stage" id="chart-8">
+          </div>
+          <div class="chart-notes">
+            Notes about this chart
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-4">
+        <div class="chart-wrapper">
+          <div class="chart-title">
+            Cell Title
+          </div>
+          <div class="chart-stage" id="chart-9">
+          </div>
+          <div class="chart-notes">
+            Notes about this chart
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <hr>
+
+    <p class="small text-muted">Built with &#9829; by <a href="https://keen.io">Keen IO</a></p>
+
+  </div>
+
+  <script type="text/javascript" src="assets/lib/jquery/dist/jquery.min.js"></script>
+  <script type="text/javascript" src="assets/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+
+  <script type="text/javascript" src="assets/lib/holderjs/holder.js"></script>
+  <script>
+    Holder.add_theme("white", { background:"#fff", foreground:"#a7a7a7", size:10 });
+  </script>
+
+  <script type="text/javascript" src="assets/lib/keen-js/dist/keen.min.js"></script>
+  <script type="text/javascript" src="assets/js/meta.js"></script>
+
+<script>
+var client = new Keen({
+  projectId: "YOUR_PROJECT_ID",
+  readKey: "YOUR_READ_KEY"
+});
+
+Keen.ready(function(){
+
+    // ********** CHART-1 ************
+    // ===============================
+    // Calculate Stripe Revenue Metric
+    // ===============================
+
+    var revenue = new Keen.Query('sum', {
+        eventCollection: 'Stripe_Events',
+        timeframe: 'last_30_days',
+        targetProperty: 'data.object.amount',
+        filters: [{
+            'property_name':'type',
+            'operator':'eq',
+            'property_value':'charge.succeeded'
+        }]
+    });
+
+
+    // ===============================
+    // Create a new Dataviz instance
+    // ===============================
+
+    var revMetric = new Keen.Dataviz()
+      .el(document.getElementById('chart-1'))
+      .chartOptions({
+          prefix: '$',
+      })
+      .height(180)
+      .prepare(); // start spinner
+
+    // ===============================
+    // Run query and handle the result
+    // ===============================
+
+    client.run(revenue, function(err, response){
+        // if (err) throw(err);
+        revMetric
+          .parseRawData({ result: Math.round(response.result/100) })
+          .title('Last 30 Days\' Revenue')
+          .render();
+    });
+    // ********** CHART-2 ************
+    // ======================================
+    // Create Revenue Over Time Line Chart
+    // ======================================
+
+    var revSeries = new Keen.Query('sum', {
+        eventCollection: 'Stripe_Events',
+        timeframe: 'last_6_months',
+        targetProperty: 'data.object.amount',
+        interval: 'monthly',
+        filters: [{
+            'property_name':'type',
+            'operator':'eq',
+            'property_value':'charge.succeeded'
+        }]
+    });
+
+    // ===============================
+    // Create a new Dataviz instance
+    // ===============================
+
+    var monthlyRevChart = new Keen.Dataviz()
+      .el(document.getElementById('chart-2'))
+      .chartOptions({
+        hAxis: {
+          slantedText: true,
+          slantedTextAngle: 45
+        },
+        legend: { position: 'none' }
+      })
+      .height(180)
+      .prepare(); // start spinner
+
+    // ===============================
+    // Run query and handle the result
+    // ===============================
+
+    client.run(revSeries, function(err, response){
+        // if (err) throw(err);
+        monthlyRevChart
+          .parseRequest(this)
+          .title('Revenue per month')
+          .call(function(){
+              // Run a function within the chart context!
+              // Create a new series (column)...
+              this.dataset.appendColumn('Revenue in Dollars', function(row){
+                // ...where each cell is derived from the original value/100
+                return row[1]/100;
+            });
+          })
+          .render();
+    });
+
+    // ********** CHART-3 ************
+
+  // ================================================
+  // Create New Customer Sales Conversions Line Chart
+  // ================================================
+
+  var newPayingCustomersSeries = new Keen.Query('count', {
+      eventCollection: 'Stripe_Events',
+      timeframe: 'last_6_months',
+      interval: 'monthly',
+      filters: [{
+          'property_name':'type',
+          'operator':'eq',
+          'property_value':'customer.subscription.updated'
+      },
+      {
+          'property_name':'data.object.plan.amount',
+          'operator':'gt',
+          'property_value': 0
+      },
+      {
+          'property_name':'data.previous_attributes.plan.amount',
+          'operator':'eq',
+          'property_value': 0
+      }]
+  });
+
+  // ===============================
+  // Run query and draw the result
+  // ===============================
+
+  client.draw(newPayingCustomersSeries, document.getElementById('chart-3'), {
+      chartType: 'areachart',
+      title: 'New Customer Conversions',
+      chartOptions: {
+          hAxis: {
+            slantedText: true,
+            slantedTextAngle: 45
+          },
+          legend: { position: 'none' },
+          height: 180
+      }
+  });
+    // ********** CHART-4 ************
+
+    // =========================================
+    // Create Unique Paying Customers Line Chart
+    // =========================================
+
+    var payingCustomersSeries = new Keen.Query('count_unique', {
+        eventCollection: 'Stripe_Events',
+        timeframe: 'last_6_months',
+        targetProperty: 'data.object.customer',
+        interval: 'monthly',
+        filters: [{
+            'property_name':'type',
+            'operator':'eq',
+            'property_value':'invoice.payment_succeeded'
+        },
+        {
+            'property_name':'data.object.total',
+            'operator':'gt',
+            'property_value': 0
+        }]
+    });
+
+    // ===============================
+    // Run query and draw the result
+    // ===============================
+
+    client.draw(payingCustomersSeries, document.getElementById('chart-4'), {
+        chartType: 'areachart',
+        title: 'Total Unique Paying Customers',
+        chartOptions: {
+            hAxis: {
+              slantedText: true,
+              slantedTextAngle: 45
+            },
+            legend: { position: 'none' },
+            height: 180
+        }
+    });
+
+    // ********** CHART-5 ************
+
+    // ========================================================
+    // Create Line Chart of New Customers Paying for First Time
+    // ========================================================
+
+    var timeframe = 'last_6_months';
+
+    var countNewPayingCustomers = new Keen.Query('count', {
+        eventCollection: 'Stripe_Events',
+        timeframe: timeframe,
+        interval: 'monthly',
+        filters: [{
+            'property_name':'type',
+            'operator':'eq',
+            'property_value':'customer.subscription.updated'
+        },
+        {
+            'property_name':'data.object.plan.amount',
+            'operator':'gt',
+            'property_value': 0
+        },
+        {
+            'property_name':'data.previous_attributes.plan.amount',
+            'operator':'eq',
+            'property_value': 0
+        }]
+    });
+
+    // ===============================
+    // Run query and draw the result
+    // ===============================
+
+    client.draw(countNewPayingCustomers, document.getElementById('chart-5'), {
+        chartType: 'areachart',
+        title: 'Count of New Customers Paying for the First Time (' + timeframe + ')',
+        chartOptions: {
+            hAxis: {
+              slantedText: true,
+              slantedTextAngle: 45
+            },
+            legend: { position: 'none' },
+            height: 180
+        }
+    });
+
+
+    // ********** CHART-6 ************
+    // ============================================
+    // Create Revenue from NEW Customers Line Chart
+    // ============================================
+
+    var timeframe = 'last_6_months';
+
+    var newCustomerRev = new Keen.Query('sum', {
+        eventCollection: 'Stripe_Events',
+        timeframe: timeframe,
+        targetProperty: 'data.object.plan.amount',
+        interval: 'monthly',
+        filters: [{
+            'property_name':'type',
+            'operator':'eq',
+            'property_value':'customer.subscription.updated'
+        },
+        {
+            'property_name':'data.object.plan.amount',
+            'operator':'gt',
+            'property_value': 0
+        },
+        {
+            'property_name':'data.previous_attributes.plan.amount',
+            'operator':'eq',
+            'property_value': 0
+        }]
+    });
+
+    // ===============================
+    // Create a new Dataviz instance
+    // ===============================
+
+    var newCustomerRevChart = new Keen.Dataviz()
+      .el(document.getElementById('chart-6'))
+      .chartType('areachart')
+      .chartOptions({
+        hAxis: {
+          slantedText: true,
+          slantedTextAngle: 45
+        },
+        legend: { position: 'none' }
+      })
+      .height(180)
+      .prepare(); // start spinner
+
+    // ===============================
+    // Run query and handle the result
+    // ===============================
+
+    client.run(newCustomerRev, function(err, response){
+        if (err) {
+          // Display a custom error in place of the chart
+          newCustomerRevChart
+            .error('Uh-oh, an error occurred');
+        }
+        else {
+          newCustomerRevChart
+            .parseRequest(this)
+            .title('Revenue from NEW Customers (' + timeframe + ')')
+            .call(function(){
+              // Run a function within the chart context!
+              // Create a new series (column)...
+              this.dataset.appendColumn('Revenue in Dollars', function(row){
+                // ...where each cell is derived from the original value/100
+                return row[1]/100;
+              });
+            })
+            .render();
+        }
+    });
+
+    // ********** CHART-7 ************
+    // =============================
+    // Upsell Minus Churn Line Chart
+    // =============================
+
+    var interval = 'monthly';
+    var timeframe = 'last_6_months';
+
+    var upSellSeriesStarting = new Keen.Query('sum', {
+        eventCollection: 'Stripe_Events',
+        timeframe: timeframe,
+        targetProperty: 'data.previous_attributes.plan.amount',
+        interval: interval,
+        filters: [{
+            'property_name': 'type',
+            'operator': 'eq',
+            'property_value': 'customer.subscription.updated'
+        },
+        {
+            'property_name': 'data.object.plan.amount',
+            'operator': 'gt',
+            'property_value': 0
+        },
+        {
+            'property_name': 'data.previous_attributes.plan.amount',
+            'operator': 'gt',
+            'property_value': 0
+        }]
+    });
+
+    var upSellSeriesFinal = new Keen.Query('sum', {
+        eventCollection: 'Stripe_Events',
+        timeframe: timeframe,
+        targetProperty: 'data.object.plan.amount',
+        interval: interval,
+        filters: [{
+            'property_name': 'type',
+            'operator':'eq',
+            'property_value':'customer.subscription.updated'
+        },
+        {
+            'property_name': 'data.previous_attributes.plan.amount',
+            'operator': 'gt',
+            'property_value': 0
+        }]
+    });
+
+    // ===============================
+    // Create a new Dataviz instance
+    // ===============================
+
+    var netRevDiffChart = new Keen.Dataviz()
+      .el(document.getElementById('chart-7'))
+      .chartType('areachart')
+      .chartOptions({
+        hAxis: {
+          slantedText: true,
+          slantedTextAngle: 45
+        },
+        legend: { position: 'none' }
+      })
+      .height(180)
+      .prepare(); // start spinner
+
+    // ======================================
+    // Run two queries and combine the result
+    // ======================================
+
+    client.run([upSellSeriesStarting, upSellSeriesFinal], function (err, response) {
+        var i = 0, combinedResult = [];
+
+        if (err) {
+            // Display a custom error message
+            netRevDiffChart.error('An error occurred!')
+        }
+        else {
+
+            while (i < response[0].result.length) {
+              combinedResult[i] = {
+                timeframe: response[0].result[i].timeframe,
+                value: response[1].result[i].value/100 - response[0].result[i].value/100
+              };
+              i++;
+            }
+
+            netRevDiffChart
+              .parseRawData({ result: combinedResult })
+              .title('Upsell Minus Churn')
+              .render();
+        }
+
+    });
+
+});
+</script>
+</body>
+</html>
+
